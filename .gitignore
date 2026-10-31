@@ -1,27 +1,22 @@
-# Secrets
+# Environment variables
 .env
-.env.*
-!.env.example
 
-# Virtual environments
+# Python Virtual Environment
 venv/
 .venv/
 env/
+ENV/
 
-# Python
+# Python bytecode & cache
 __pycache__/
 *.py[cod]
+*$py.class
 .pytest_cache/
-.coverage
-htmlcov/
 
-# Editors / OS
+# IDE files
 .vscode/
 .idea/
-.DS_Store
-Thumbs.db
 
-# Build output
-*.zip
-dist/
-build/
+# OS metadata
+Thumbs.db
+.DS_Store

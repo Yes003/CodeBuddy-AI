@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CodeBuddy AI — Your Personal AI Coding Mentor</title>
+    <meta name="description" content="AI-powered coding mentor for beginner programmers powered by Google Gemma 4. Generate code, understand logic, debug errors, optimize syntax, and learn core CS concepts.">
+    
+    <!-- Google Fonts: Inter & JetBrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Prism.js Dark Theme for Syntax Highlighting -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.css" rel="stylesheet">
+
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <!-- Top Navigation Header -->
+    <header class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand" id="brand-logo" role="button" tabindex="0">
+                <div class="logo-icon">
+                    <i class="fa-solid fa-code"></i>
+                </div>
+                <div class="logo-text">
+                    <span class="brand-title">CodeBuddy<span class="accent-text">AI</span></span>
+                    <span class="brand-badge">Google Gemma 4 Mentor</span>
+                </div>
+            </div>
+
+            <!-- Navigation Links -->
+            <nav class="nav-links">
+                <button class="nav-btn active" data-view="landing" id="nav-landing">
+                    <i class="fa-solid fa-compass"></i> Overview
+                </button>
+                <button class="nav-btn" data-view="studio" id="nav-studio">
+                    <i class="fa-solid fa-laptop-code"></i> Studio
+                </button>
+                <button class="nav-btn" data-view="about" id="nav-about">
+                    <i class="fa-solid fa-circle-info"></i> About & Architecture
+                </button>
+            </nav>
+
+            <!-- Status Indicator & Quick Launch -->
+            <div class="nav-actions">
+                <div id="ai-status-indicator" class="status-indicator-pill {{ 'live' if is_live_ai else 'demo' }}" title="{{ provider_name if is_live_ai else 'Running in Smart Demo Mode (simulated responses)' }}">
+                    <span class="pulse-dot"></span>
+                    <span id="ai-status-text">{{ 'Live ' + provider_name if is_live_ai else 'Demo Mode' }}</span>
+                </div>
+                <button class="btn btn-primary btn-sm" id="btn-quick-studio">
+                    <i class="fa-solid fa-play"></i> Open Studio
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Global Toast Container -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- MAIN APPLICATION WRAPPER -->
+    <main class="main-wrapper">
+
+        <!-- ========================================== -->
+        <!-- VIEW 1: LANDING PAGE -->
+        <!-- ========================================== -->
+        <section id="view-landing" class="view-section active">
+            <!-- Hero Section -->
+            <div class="hero-section">
+                <div class="hero-badge">
+                    <i class="fa-brands fa-google"></i> Powered by Google Gemma 4 (26B-A4B-IT)
+                </div>
+                <h1 class="hero-title">
+                    Master Code with Your Personal <br>
+                    <span class="gradient-text">Gemma 4 Coding Mentor</span>
+                </h1>
+                <p class="hero-subtitle">
+                    Generate beginner-friendly code, understand logic step-by-step, debug sneaky errors, optimize your syntax, and chat interactively with your AI mentor — in simple, plain English.
+                </p>
+
+                <div class="hero-cta-group">
+                    <button class="btn btn-primary btn-lg" id="btn-hero-launch">
+                        <i class="fa-solid fa-rocket"></i> Launch Coding Studio
+                    </button>
+                    <button class="btn btn-secondary btn-lg" id="btn-hero-sample">
+                        <i class="fa-solid fa-lightbulb"></i> Try Python Sample
+                    </button>
+                </div>
+
+                <!-- Live Feature Stats -->
+                <div class="hero-stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+                        <div class="stat-info">
+                            <h3>6 Core Modes</h3>
+                            <p>Generate, Explain, Debug, Optimize, Test, Learn</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fa-solid fa-comments"></i></div>
+                        <div class="stat-info">
+                            <h3>Follow-Up Chat</h3>
+                            <p>Interactive chat with conversation history</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fa-solid fa-shield-halved"></i></div>
+                        <div class="stat-info">
+                            <h3>100% Safe Review</h3>
+                            <p>Pure static inspection — no code execution</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fa-solid fa-bolt"></i></div>
+                        <div class="stat-info">
+                            <h3>Smart Demo Fallback</h3>
+                            <p>Always ready with zero rate-limit downtime</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Features Showcase Grid -->
+            <div class="features-section">
+                <div class="section-header">
+                    <h2>Everything a Beginner Needs to Code Confidently</h2>
+                    <p>Designed to build mental models and true understanding, not just hand you raw answers.</p>
+                </div>
+
+                <div class="feature-cards-grid">
+                    <!-- Feature 0: Code Generation -->
+                    <div class="feature-card" data-mode="generate">
+                        <div class="card-icon-wrap icon-indigo">
+                            <i class="fa-solid fa-code-merge"></i>
+                        </div>
+                        <h3>Code Generation</h3>
+                        <p>Describe what you want to build in plain words. Gemma writes clean, idiomatic code with line-by-line reasoning and runnable examples.</p>
+                        <span class="card-link">Try Code Generation <i class="fa-solid fa-arrow-right"></i></span>
+                    </div>
+
+                    <!-- Feature 1: Explain My Code -->
+                    <div class="feature-card" data-mode="explain">
+                        <div class="card-icon-wrap icon-blue">
+                            <i class="fa-solid fa-magnifying-glass-chart"></i>
+                        </div>
+                        <h3>Explain My Code</h3>
+                        <p>Breaks down programs line by line, explains what variables do, and reveals expected outputs using clear real-world analogies.</p>
+                        <span class="card-link">Explore in Studio <i class="fa-solid fa-arrow-right"></i></span>
+                    </div>
+
+                    <!-- Feature 2: Debug & Find Bugs -->
+                    <div class="feature-card" data-mode="bugs">
+                        <div class="card-icon-wrap icon-rose">
+                            <i class="fa-solid fa-bug"></i>
+                        </div>
+                        <h3>Debug & Find Bugs</h3>
+                        <p>Catches syntax errors, logic flaws, off-by-one loops, and runtime pitfalls. Clearly flags suspected vs. verified issues with instant fixes.</p>
+                        <span class="card-link">Explore in Studio <i class="fa-solid fa-arrow-right"></i></span>
+                    </div>
+
+                    <!-- Feature 3: Optimize & Clean Code -->
+                    <div class="feature-card" data-mode="improve">
+                        <div class="card-icon-wrap icon-cyan">
+                            <i class="fa-solid fa-sparkles"></i>
+                        </div>
+                        <h3>Optimize & Clean Code</h3>
+                        <p>Refactors and cleans code according to best industry practices without altering logic. Provides itemized change explanations.</p>
+                        <span class="card-link">Explore in Studio <i class="fa-solid fa-arrow-right"></i></span>
+                    </div>
+
+                    <!-- Feature 4: Generate Test Cases -->
+                    <div class="feature-card" data-mode="tests">
+                        <div class="card-icon-wrap icon-violet">
+                            <i class="fa-solid fa-list-check"></i>
+                        </div>
+                        <h3>Generate Test Cases</h3>
+                        <p>Creates normal, boundary, and extreme edge test cases with rationale so you learn to test like a professional engineer.</p>
+                        <span class="card-link">Explore in Studio <i class="fa-solid fa-arrow-right"></i></span>
+                    </div>
+
+                    <!-- Feature 5: Beginner Learning Mode -->
+                    <div class="feature-card" data-mode="learn">
+                        <div class="card-icon-wrap icon-emerald">
+                            <i class="fa-solid fa-graduation-cap"></i>
+                        </div>
+                        <h3>Beginner Learning Mode</h3>
+                        <p>Translates complex CS jargon (like 'recursion' or 'pointers') into intuitive everyday comparisons with bite-sized challenges.</p>
+                        <span class="card-link">Explore in Studio <i class="fa-solid fa-arrow-right"></i></span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- VIEW 2: MAIN STUDIO DASHBOARD -->
+        <!-- ========================================== -->
+        <section id="view-studio" class="view-section">
+            <div class="studio-layout">
+                
+                <!-- Sidebar Controls & Mode Selection -->
+                <aside class="studio-sidebar">
+                    <div class="sidebar-block">
+                        <label class="control-label"><i class="fa-solid fa-code"></i> Programming Language</label>
+                        <div class="select-wrapper">
+                            <select id="language-select" class="custom-select">
+                                <option value="python" selected>Python (.py)</option>
+                                <option value="javascript">JavaScript (.js)</option>
+                                <option value="java">Java (.java)</option>
+                                <option value="c">C (.c)</option>
+                                <option value="cpp">C++ (.cpp)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="sidebar-block">
+                        <div class="block-title-row">
+                            <label class="control-label"><i class="fa-solid fa-sliders"></i> Analysis & Action Mode</label>
+                            <span class="badge-subtle" id="active-mode-badge">Explain</span>
+                        </div>
+                        <div class="mode-options-grid">
+                            <button class="mode-btn" data-mode="generate">
+                                <i class="fa-solid fa-code-merge"></i>
+                                <div class="mode-btn-text">
+                                    <span class="mode-name">Generate Code</span>
+                                    <span class="mode-desc">Build from plain English prompt</span>
+                                </div>
+                            </button>
+                            <button class="mode-btn active" data-mode="explain">
+                                <i class="fa-solid fa-book-open"></i>
+                                <div class="mode-btn-text">
+                                    <span class="mode-name">Explain My Code</span>
+                                    <span class="mode-desc">Step-by-step logic & outputs</span>
+                                </div>
+                            </button>
+                            <button class="mode-btn" data-mode="bugs">
+                                <i class="fa-solid fa-bug"></i>
+                                <div class="mode-btn-text">
+                                    <span class="mode-name">Debug & Find Bugs</span>
+                                    <span class="mode-desc">Syntax, logic & runtime hazards</span>
+                                </div>
+                            </button>
+                            <button class="mode-btn" data-mode="improve">
+                                <i class="fa-solid fa-wand-magic-sparkles"></i>
+                                <div class="mode-btn-text">
+                                    <span class="mode-name">Optimize & Clean Code</span>
+                                    <span class="mode-desc">Idiomatic refactoring & tips</span>
+                                </div>
+                            </button>
+                            <button class="mode-btn" data-mode="tests">
+                                <i class="fa-solid fa-list-check"></i>
+                                <div class="mode-btn-text">
+                                    <span class="mode-name">Generate Test Cases</span>
+                                    <span class="mode-desc">Normal, boundary & edge cases</span>
+                                </div>
+                            </button>
+                            <button class="mode-btn" data-mode="learn">
+                                <i class="fa-solid fa-graduation-cap"></i>
+                                <div class="mode-btn-text">
+                                    <span class="mode-name">Learning Mode</span>
+                                    <span class="mode-desc">Jargon buster & CS analogies</span>
+                                </div>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Presets & Sample Loader -->
+                    <div class="sidebar-block">
+                        <div class="block-title-row">
+                            <label class="control-label"><i class="fa-solid fa-lightbulb"></i> Load Beginner Sample</label>
+                        </div>
+                        <button class="btn btn-outline btn-block" id="btn-load-sample">
+                            <i class="fa-solid fa-file-code"></i> Insert Sample for Selected Lang
+                        </button>
+                    </div>
+
+                    <!-- Session History Drawer / Toggle -->
+                    <div class="sidebar-block history-block">
+                        <div class="block-title-row">
+                            <label class="control-label"><i class="fa-solid fa-clock-rotate-left"></i> Session History</label>
+                            <span class="history-count" id="history-count-badge">0 items</span>
+                        </div>
+                        <div class="history-list" id="history-items-container">
+                            <div class="history-empty">No analyses yet in this session.</div>
+                        </div>
+                        <button class="btn btn-ghost btn-sm btn-block text-danger mt-2" id="btn-clear-history">
+                            <i class="fa-solid fa-trash-can"></i> Clear History
+                        </button>
+                    </div>
+                </aside>
+
+                <!-- Main Studio Workspace: Editor + Results Split -->
+                <div class="studio-workspace">
+                    
+                    <!-- Left Column: Code Editor Pane -->
+                    <section class="editor-pane">
+                        <div class="pane-header">
+                            <div class="pane-title">
+                                <i class="fa-solid fa-terminal"></i>
+                                <span id="editor-pane-label">Code / Prompt Input</span>
+                                <span class="lang-tag" id="editor-lang-indicator">python</span>
+                            </div>
+                            <div class="pane-actions">
+                                <button class="btn btn-icon" id="btn-copy-input" title="Copy input">
+                                    <i class="fa-regular fa-copy"></i> Copy
+                                </button>
+                                <button class="btn btn-icon" id="btn-clear-input" title="Clear editor">
+                                    <i class="fa-solid fa-eraser"></i> Clear
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Editor Container with Line Numbers -->
+                        <div class="editor-container">
+                            <div class="editor-line-numbers" id="editor-line-numbers">1</div>
+                            <textarea 
+                                id="code-editor" 
+                                class="code-textarea" 
+                                placeholder="Paste or type your code here... (or for 'Generate Code', describe what you want to build)&#10;&#10;Shortcut: Press Ctrl + Enter to run!" 
+                                spellcheck="false"
+                                autocomplete="off"
+                                autocorrect="off"
+                                autocapitalize="off"></textarea>
+                        </div>
+
+                        <!-- Editor Footer / Actions Bar -->
+                        <div class="editor-footer">
+                            <div class="editor-info">
+                                <span id="char-counter">0 chars</span>
+                                <span class="dot-separator">•</span>
+                                <span id="line-counter">1 lines</span>
+                            </div>
+                            <div class="editor-run-controls">
+                                <span class="shortcut-hint"><kbd>Ctrl</kbd> + <kbd>Enter</kbd></span>
+                                <button class="btn btn-primary" id="btn-analyze-code">
+                                    <i class="fa-solid fa-brain"></i> <span id="btn-analyze-text">Run Gemma 4</span>
+                                </button>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Right Column: Results & Insights Pane -->
+                    <section class="results-pane">
+                        <div class="pane-header">
+                            <div class="pane-title">
+                                <i class="fa-solid fa-sparkles"></i>
+                                <span>Mentor Insights</span>
+                                <span class="mode-tag" id="results-mode-indicator">Explain</span>
+                            </div>
+                            <div class="pane-actions" id="results-header-actions">
+                                <span class="demo-tag" id="results-demo-badge" style="display: none;">
+                                    <i class="fa-solid fa-flask"></i> Demo Response
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Results Content Scroll Area -->
+                        <div class="results-container" id="results-container">
+                            
+                            <!-- Empty Initial State -->
+                            <div class="empty-state" id="results-empty-state">
+                                <div class="empty-icon-wrap">
+                                    <i class="fa-solid fa-lightbulb"></i>
+                                </div>
+                                <h3>Ready for AI Mentorship</h3>
+                                <p>Select an analysis or generation mode, write or paste your code/prompt, and click <strong>Run Gemma 4</strong> to receive instant beginner-friendly guidance.</p>
+                                <div class="empty-tips">
+                                    <div class="tip-item"><i class="fa-solid fa-check"></i> Code Generation with runnable examples</div>
+                                    <div class="tip-item"><i class="fa-solid fa-check"></i> Step-by-step logic breakdowns</div>
+                                    <div class="tip-item"><i class="fa-solid fa-check"></i> Interactive follow-up chat with history</div>
+                                </div>
+                            </div>
+
+                            <!-- Loading State -->
+                            <div class="loading-state" id="results-loading-state" style="display: none;">
+                                <div class="spinner-orbit">
+                                    <div class="orbit-spinner"></div>
+                                    <div class="orbit-core"><i class="fa-solid fa-brain"></i></div>
+                                </div>
+                                <h3 id="loading-title">Gemma 4 is Thinking...</h3>
+                                <p id="loading-subtitle">Inspecting syntax and structural logic</p>
+                                <div class="loading-progress-bar">
+                                    <div class="progress-bar-fill"></div>
+                                </div>
+                            </div>
+
+                            <!-- Dynamic Results View -->
+                            <div class="dynamic-results" id="results-content-area" style="display: none;">
+                                <!-- Mode specific output will be injected here via JavaScript -->
+                            </div>
+
+                            <!-- Interactive Follow-Up Chat Section with History -->
+                            <div class="followup-chat-section" id="followup-chat-section" style="display: none;">
+                                <div class="chat-header">
+                                    <div class="chat-title">
+                                        <i class="fa-solid fa-comments"></i>
+                                        <span>Ask Gemma a Follow-up Question</span>
+                                        <span class="badge-subtle">Chat History Enabled</span>
+                                    </div>
+                                    <button class="btn btn-ghost btn-sm" id="btn-clear-chat" title="Clear chat history">
+                                        <i class="fa-solid fa-rotate-left"></i> Reset Chat
+                                    </button>
+                                </div>
+                                <div class="chat-messages-container" id="chat-messages-container">
+                                    <div class="chat-intro-msg">
+                                        <i class="fa-solid fa-graduation-cap"></i>
+                                        <span>Have questions about this code or want to make changes? Ask below! Gemma will guide you step by step.</span>
+                                    </div>
+                                </div>
+                                <form class="chat-input-form" id="chat-form">
+                                    <input type="text" id="chat-input" class="chat-input-field" placeholder="e.g., Can you explain line 3 in simpler terms? Or add edge-case validation?" autocomplete="off" />
+                                    <button type="submit" class="btn btn-primary btn-sm" id="btn-chat-send">
+                                        <i class="fa-solid fa-paper-plane"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- VIEW 3: ABOUT & ARCHITECTURE -->
+        <!-- ========================================== -->
+        <section id="view-about" class="view-section">
+            <div class="about-container">
+                <div class="about-hero">
+                    <span class="hero-badge"><i class="fa-brands fa-google"></i> Google Gemma 4 Integration</span>
+                    <h1>About CodeBuddy AI</h1>
+                    <p class="about-tagline">
+                        A personal coding mentor engineered to bridge the gap between getting stuck and building genuine programming intuition using Google's Gemma 4.
+                    </p>
+                </div>
+
+                <!-- Problem & Mission -->
+                <div class="about-grid">
+                    <div class="about-card">
+                        <div class="card-icon-wrap icon-blue">
+                            <i class="fa-solid fa-triangle-exclamation"></i>
+                        </div>
+                        <h3>The Beginner Problem</h3>
+                        <p>
+                            Beginner programmers frequently get stuck on cryptic error messages, subtle logical bugs, and intimidating syntax. Existing AI assistants often dump raw code without explaining the underlying reasoning, creating dependency rather than true comprehension.
+                        </p>
+                    </div>
+
+                    <div class="about-card">
+                        <div class="card-icon-wrap icon-cyan">
+                            <i class="fa-solid fa-bullseye"></i>
+                        </div>
+                        <h3>The Gemma 4 Solution</h3>
+                        <p>
+                            CodeBuddy AI uses Google's Gemma 4 (26B-A4B-IT) to act like an encouraging, patient senior teaching assistant. It explains code logic through everyday metaphors, points out tricky edge cases, and maintains conversation context so students can ask follow-ups.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Architecture & Workflow Section -->
+                <div class="about-card full-width mt-4">
+                    <h3><i class="fa-solid fa-diagram-project"></i> Application Architecture & Workflow</h3>
+                    <p class="mb-4">Decoupled architecture leveraging Google's official GenAI Python SDK (`google-genai`) with dual-engine safety.</p>
+
+                    <div class="architecture-diagram">
+                        <div class="arch-node">
+                            <div class="arch-icon"><i class="fa-solid fa-desktop"></i></div>
+                            <h4>Frontend Layer</h4>
+                            <p>HTML5, Modern CSS3, Vanilla JS, Prism.js</p>
+                            <span class="arch-badge">Zero Framework Bloat</span>
+                        </div>
+                        <div class="arch-arrow"><i class="fa-solid fa-arrow-right"></i></div>
+                        <div class="arch-node">
+                            <div class="arch-icon"><i class="fa-brands fa-python"></i></div>
+                            <h4>Backend API</h4>
+                            <p>Flask REST API with Validation & Chat Routes</p>
+                            <span class="arch-badge">Payload & Safety Guards</span>
+                        </div>
+                        <div class="arch-arrow"><i class="fa-solid fa-arrow-right"></i></div>
+                        <div class="arch-node">
+                            <div class="arch-icon"><i class="fa-brands fa-google"></i></div>
+                            <h4>Gemma 4 Engine</h4>
+                            <p>Google GenAI SDK (gemma-4-26b-a4b-it)</p>
+                            <span class="arch-badge">Multi-Turn Chat History</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tech Stack & Security Grid -->
+                <div class="about-grid mt-4">
+                    <div class="about-card">
+                        <h3><i class="fa-solid fa-layer-group"></i> Technology Stack</h3>
+                        <ul class="tech-list">
+                            <li><strong>AI Core:</strong> Google GenAI SDK (<code>google-genai>=2.0.0</code>) with Gemma 4 (<code>gemma-4-26b-a4b-it</code>)</li>
+                            <li><strong>Fallback AI:</strong> OpenAI / OpenRouter SDK (<code>openai>=1.12.0</code>)</li>
+                            <li><strong>Backend:</strong> Python 3.11+, Flask 3.x, Flask-CORS</li>
+                            <li><strong>Frontend:</strong> HTML5, CSS3 Custom Properties, Vanilla JS (ES6+), Prism.js</li>
+                            <li><strong>Environment:</strong> Python-dotenv for secure local credential isolation</li>
+                            <li><strong>Testing:</strong> Pytest automated suite covering all modes and chat routes</li>
+                        </ul>
+                    </div>
+
+                    <div class="about-card">
+                        <h3><i class="fa-solid fa-shield-halved"></i> Security & Safety Guarantees</h3>
+                        <ul class="tech-list">
+                            <li><strong>Zero Arbitrary Execution:</strong> The server never executes or compiles user-submitted code (no <code>eval()</code>).</li>
+                            <li><strong>No Client-Side Secrets:</strong> API keys are kept strictly in backend <code>.env</code> and never exposed in frontend scripts.</li>
+                            <li><strong>Strict Prompt Guardrails:</strong> User code is treated strictly as passive data to prevent prompt injection.</li>
+                            <li><strong>Quota & Rate-Limit Resilience:</strong> Automatically catches HTTP 429 quota errors and provides smooth fallback.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Live Configuration & Status -->
+                <div class="about-card full-width mt-4 text-center">
+                    <h3>Current Server Status</h3>
+                    <p class="mb-3">
+                        Status: <strong class="text-success"><i class="fa-solid fa-circle-check"></i> Operational</strong> 
+                        &nbsp;|&nbsp; 
+                        Active Engine: <strong class="{{ 'text-info' if is_live_ai else 'text-warning' }}">{{ ('Live ' + provider_name + ' (' + model_name + ')') if is_live_ai else 'Smart Demo Mode (Gemma 4 Simulated)' }}</strong>
+                    </p>
+                    <p class="text-muted text-sm">
+                        To connect Google Gemma 4 live, ensure <code>GEMINI_API_KEY</code> is set in your <code>.env</code> file.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+        <div class="footer-container">
+            <p>CodeBuddy AI — Empowering beginner programmers with Google Gemma 4. Built with <i class="fa-solid fa-heart text-rose"></i>.</p>
+            <div class="footer-links">
+                <a href="#view-landing" class="footer-link-action" data-view="landing">Home</a>
+                <a href="#view-studio" class="footer-link-action" data-view="studio">Studio</a>
+                <a href="#view-about" class="footer-link-action" data-view="about">About</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Prism.js & Plugins for Syntax Highlighting -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-javascript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-java.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-c.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-cpp.min.js"></script>
+
+    <!-- CodeBuddy Custom App Script -->
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
